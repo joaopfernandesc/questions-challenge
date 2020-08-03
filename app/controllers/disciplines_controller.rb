@@ -16,10 +16,6 @@ class DisciplinesController < ApplicationController
     elapsed_time = (end_time - start_time).round(6)
     Rails.logger.info("Got disciplines accesses in #{elapsed_time} seconds.")
     render(json: { access_ranking: daily_access, total_accesses: total_accesses, elapsed_time: elapsed_time })
-  rescue => e
-    Rails.logger.error(e.message)
-    Rails.logger.error(e.backtrace.join("\n"))
-    render(status: 500)
   end
 
   def get_hottest_disciplines
@@ -30,9 +26,4 @@ class DisciplinesController < ApplicationController
     elapsed_time = (end_time - start_time).round(6)
     Rails.logger.info("Got hottest disciplines in #{elapsed_time} seconds.")
     render(json: { hottest_disciplines: hottest_disciplines, elapsed_time: elapsed_time })
-  rescue => e
-    Rails.logger.error(e.message)
-    Rails.logger.error(e.backtrace.join("\n"))
-    render(status: 500)
-  end
 end

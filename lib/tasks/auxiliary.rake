@@ -6,9 +6,10 @@ namespace :aux do
     access_questions_ids = JSON.parse(File.open("#{Rails.root}/question_access.json", 'r').read).pluck("question_id")
     ordered = true
 
-    questions_ids.enum_for(:each_with_index).map do |_q, i|
-      ordered = false if questions_ids[i] != access_questions_ids[i * 100]
-    end
+    questions_ids.enum_for(:each_with_index)
+      .map do |_q, i|
+        ordered = false if questions_ids[i] != access_questions_ids[i * 100]
+      end
 
     p ordered
   end
@@ -20,7 +21,9 @@ namespace :aux do
 
     questions.enum_for(:each_with_index).map do |_q, i|
       questions[i]["id"] = i + 1
-      question_access[i * 100..((i + 1) * 100 - 1)].enum_for(:each_with_index).map { |_aq, j| question_access[i*100+j]["question_id"] = i + 1 }
+      question_access[i * 100..((i + 1) * 100 - 1)]
+        .enum_for(:each_with_index)
+        .map { |_aq, j| question_access[i * 100 + j]["question_id"] = i + 1 }
     end
 
     File.open("new_questions.json", 'wb') { |f| f << questions.to_json }

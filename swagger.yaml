@@ -1,0 +1,630 @@
+openapi: "3.0.0"
+info:
+  version: "v0.1"
+  title: Mega Hack 3a edição API
+  license:
+    name: MIT
+paths:
+  /products:
+    get:
+      tags:
+        - Produtos
+      summary: Lista os produtos
+      parameters:
+        - $ref: "#/components/parameters/offsetParam"
+        - $ref: "#/components/parameters/limitParam"
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Products"
+        "400":
+          $ref: "#/components/responses/GenericError"
+        "403":
+          $ref: "#/components/responses/UnauthorizedOperation"
+  /ru/units:
+    get:
+      summary: Lista todas as unidades
+      operationId: listPets
+      tags:
+        - Units
+      parameters:
+        - name: Authorization
+          in: header
+          description: Token de autorização
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/offsetParam"
+        - name: short
+          in: query
+          description: Quando for verdadeiro, retorna apenas os alias de todas as unidades.
+          required: false
+          schema:
+            type: boolean
+        - name: start_timestamp
+          in: query
+          description: Timestamp Epoch em segundos no fuso horário 'UTC'. Faz com que retorne apenas as unidades disponíveis no período junto com o par end_timestamp.
+          required: false
+          schema:
+            type: integer
+        - name: end_timestamp
+          in: query
+          description: Timestamp Epoch em segundos no fuso horário 'UTC'. Faz com que retorne apenas as unidades disponíveis no período.
+          required: false
+          schema:
+            type: boolean
+        - name: name
+          in: query
+          description: Filtra pelo nome.
+          schema:
+            type: string
+        - name: floor_description
+          in: query
+          description: Filtra pela descrição.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: As unidades reserváveis com os filtros aplicados.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Units"
+        "400":
+          $ref: "#/components/responses/GenericError"
+        "403":
+          $ref: "#/components/responses/UnauthorizedOperation"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "406":
+          $ref: "#/components/responses/BadParameters"
+    post:
+      summary: Cria uma unidade reservável
+      tags:
+        - Units
+      parameters:
+        - name: Authorization
+          in: header
+          description: Token de autorização
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/UpdateUnit"
+                - $ref: "#/components/schemas/CreateUnit"
+      responses:
+        "201":
+          description: Criado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unit"
+        "400":
+          $ref: "#/components/responses/GenericError"
+        "403":
+          $ref: "#/components/responses/UnauthorizedOperation"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "406":
+          $ref: "#/components/responses/BadParameters"
+  /ru/units/{alias}:
+    parameters:
+      - name: alias
+        in: path
+        required: true
+        description: Alias da unidade reservável
+        schema:
+          type: string
+    get:
+      summary: Exibe uma unidade reservável específica.
+      tags:
+        - Units
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unit"
+        "400":
+          $ref: "#/components/responses/GenericError"
+        "403":
+          $ref: "#/components/responses/UnauthorizedOperation"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "406":
+          $ref: "#/components/responses/BadParameters"
+    put:
+      summary: Atualiza uma unidade reservável
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUnit"
+      tags:
+        - Units
+      responses:
+        "200":
+          description: Atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unit"
+        "400":
+          $ref: "#/components/responses/GenericError"
+        "403":
+          $ref: "#/components/responses/UnauthorizedOperation"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "406":
+          $ref: "#/components/responses/BadParameters"
+        "409":
+          description: Modelo tem algum parâmetro inválido.
+    delete:
+      summary: Remove uma unidade reservável
+      tags:
+        - Units
+      responses:
+        "200":
+          description: Ok.
+        "400":
+          $ref: "#/components/responses/GenericError"
+        "403":
+          $ref: "#/components/responses/UnauthorizedOperation"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "406":
+          $ref: "#/components/responses/BadParameters"
+  /ru/manage_working_time_regular:
+    get:
+      tags:
+        - Working Time Regular
+      summary: Pega todas as regras regulares para aquele local.
+      parameters:
+        - $ref: "#/components/parameters/offsetParam"
+        - $ref: "#/components/parameters/limitParam"
+        - name: weekday
+          in: query
+          required: false
+          description: Dia da semana 0 - 6 = Domingo - Sábado
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  working_time_regulars:
+                    type: array
+                    items:
+                      allOf:
+                        - type: object
+                          properties:
+                            id:
+                              type: integer
+                            place_id:
+                              type: integer
+                        - $ref: "#/components/schemas/WorkingTimeRegular"
+                  total:
+                    type: integer
+                  offset:
+                    type: string
+                  limit:
+                    type: string
+                  weekday:
+                    type: string
+        "400":
+          $ref: "#/components/responses/GenericError"
+        "403":
+          $ref: "#/components/responses/UnauthorizedOperation"
+        "406":
+          $ref: "#/components/responses/BadParameters"
+    post:
+      tags:
+        - Working Time Regular
+      summary: Cria uma nova regra de horários.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkingTimeRegular"
+      responses:
+        "201":
+          description: Criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  working_time_regular:
+                    allOf:
+                      - type: object
+                        properties:
+                          id:
+                            type: integer
+                          place_id:
+                            type: integer
+                      - $ref: "#/components/schemas/WorkingTimeRegular"
+        "400":
+          $ref: "#/components/responses/GenericError"
+        "403":
+          $ref: "#/components/responses/UnauthorizedOperation"
+        "406":
+          $ref: "#/components/responses/BadParameters"
+  /ru/manage_working_time_regular/{id}:
+    delete:
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - Working Time Regular
+      responses:
+        "200":
+          description: Removido.
+        "400":
+          $ref: "#/components/responses/GenericError"
+        "403":
+          $ref: "#/components/responses/UnauthorizedOperation"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "406":
+          $ref: "#/components/responses/BadParameters"
+  /ru/manage_working_time_exception:
+    get:
+      tags:
+        - Working Time Exception
+      summary: Pega todas as exceções
+      parameters:
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/offsetParam"
+        - name: start_timestamp
+          in: query
+          required: false
+          description: Começo do período em epoch segundos, fuso horário UTC
+          schema:
+            type: integer
+        - name: end_timestamp
+          in: query
+          required: false
+          description: Final do período em epoch segundos, fuso horário UTC
+          schema:
+            type: integer
+        - name: is_open
+          in: query
+          required: false
+          description: Indica se procura por exceções de abertura ou fechamento
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  working_time_exceptions:
+                    type: array
+                    items:
+                      allOf:
+                        - type: object
+                          properties:
+                            id:
+                              type: integer
+                            place_id:
+                              type: integer
+                        - $ref: "#/components/schemas/WorkingTimeException"
+                  total:
+                    type: integer
+                  offset:
+                    type: string
+                  limit:
+                    type: string
+                  start_timestamp:
+                    type: string
+                  end_timestamp:
+                    type: string
+                  is_open:
+                    type: string
+        "400":
+          $ref: "#/components/responses/GenericError"
+        "403":
+          $ref: "#/components/responses/UnauthorizedOperation"
+        "406":
+          $ref: "#/components/responses/BadParameters"
+    post:
+      summary: Cria uma nova exceção.
+      tags:
+        - Working Time Exception
+      responses:
+        "201":
+          description: Criado.
+        "400":
+          $ref: "#/components/responses/GenericError"
+        "403":
+          $ref: "#/components/responses/UnauthorizedOperation"
+        "406":
+          $ref: "#/components/responses/BadParameters"
+        "409":
+          description: Já existe uma exceção para este período.
+  /ru/manage_working_time_exception/{id}:
+    delete:
+      summary: Remove uma exceção existente.
+      tags:
+        - Working Time Exception
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+          required: true
+      responses:
+        "200":
+          description: Excluído.
+        "400":
+          $ref: "#/components/responses/GenericError"
+        "403":
+          $ref: "#/components/responses/UnauthorizedOperation"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "406":
+          $ref: "#/components/responses/BadParameters"
+components:
+  responses:
+    GenericError:
+      description: Erro genérico.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                example: B000
+              message:
+                type: string
+                example: Ocorreu um erro
+    UnauthorizedOperation:
+      description: Usuário não autorizado.
+      content:
+        application/json:
+          schema:
+            type: object
+
+            properties:
+              code:
+                type: string
+                example: S004
+              message:
+                type: string
+                example: O usuário não tem privilégios para executar esse tipo de operação.
+    NotFound:
+      description: Não encontrado
+      content:
+        application/json:
+          schema:
+            type: object
+
+            properties:
+              code:
+                type: string
+                example: U002
+              message:
+                type: string
+                example: A busca não encontrou o id informado
+    BadParameters:
+      description: Parâmetros incorretos
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                example: U000
+              message:
+                type: string
+                example: Os parâmetros do request são inválidos ou estão incompletos
+  schemas:
+    WorkingTimeException:
+      type: object
+      properties:
+        start_timestamp:
+          type: integer
+        end_timestamp:
+          type: integer
+        is_open:
+          type: integer
+    WorkingTimeRegular:
+      type: object
+      properties:
+        weekday:
+          type: integer
+        start_time:
+          type: integer
+        end_time:
+          type: integer
+    UpdateUnit:
+      type: object
+      properties:
+        name:
+          type: string
+        infrastructure_type_id:
+          type: integer
+        status:
+          type: integer
+        max_range:
+          type: integer
+        min_reservation_range:
+          type: integer
+        free_time_needed:
+          type: integer
+        time_unit:
+          type: string
+        no_show_action:
+          type: integer
+        max_reservation_range:
+          type: integer
+        seats:
+          type: integer
+        equipment_inventory:
+          type: array
+          items:
+            type: object
+            properties:
+              description:
+                type: string
+              unit:
+                type: string
+              value:
+                type: integer
+    CreateUnit:
+      required:
+        - name
+        - infrastructure_type_id
+        - status
+        - max_range
+        - min_reservation_range
+        - free_time_needed
+        - time_unit
+        - no_show_action
+        - max_reservation_range
+        - seats
+    Unit:
+      type: object
+      properties:
+        id:
+          type: integer
+        alias:
+          description: Nome único que diferencia ela das outras para o usuário
+          type: string
+        place_id:
+          type: integer
+          description: Correlação com o local ao qual pertencem
+        name:
+          type: string
+        floor_description:
+          description: Orientações de localização (andar e bloco)
+          type: string
+        infrastructure_type:
+          type: object
+          description: Tipo (sala de reuniões, mesa, salão de festa, quadra esportiva, sala de trabalho etc)
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            only_one_seat:
+              type: boolean
+              description: para diferenciar mesa de outros (força seats = 1 quando true)
+        seats:
+          type: integer
+          description: Quantidade de lugares
+        equipment_inventory:
+          type: array
+          items:
+            type: object
+            properties:
+              equipment_inventory_id:
+                type: integer
+              descriptionn:
+                type: string
+              value:
+                type: string
+                description: pode ser um número “5” ou pode ser uma medida “10 x 3”
+              unit:
+                description: pode ser quantidade,   dimensões, metro, quilograma
+                type: string
+        status:
+          type: string
+        max_range:
+          type: integer
+        max_reservation_range:
+          type: integer
+        min_reservation_range:
+          type: integer
+        checkin_timeout:
+          type: integer
+        no_show_action:
+          type: string
+        areas_group_id:
+          type: integer
+        checkin_tablet:
+          type: boolean
+        chekin_qrcode:
+          type: boolean
+        checkin_magikey:
+          type: boolean
+        smartlock_id:
+          type: integer
+    Units:
+      type: object
+      properties:
+        reservable_units:
+          type: array
+          items:
+            $ref: "#/components/schemas/Unit"
+        total_records:
+          type: integer
+        offset:
+          type: integer
+        limit:
+          type: integer
+    Products:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              uuid:
+                type: string
+              name:
+                type: string
+              category:
+                type: string
+              price:
+                type: integer
+              installments:
+                type: integer
+                description: "Número de parcelas."
+              description:
+                type: string
+                description: "Descrição do produto."
+              discount:
+                type: integer
+                description: "Desconto no produto caso use o vale."
+  parameters:
+    offsetParam:
+      name: offset
+      in: query
+      required: true
+      description: Offset de resultados.
+      schema:
+        type: string
+    limitParam:
+      name: limit
+      description: Limite de resultados.
+      in: query
+      required: true
+      schema:
+        type: string
+# Added by API Auto Mocking Plugin
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/joaofernandes/ReservableUnits/v0.1

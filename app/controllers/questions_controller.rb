@@ -6,7 +6,7 @@ class QuestionsController < ApplicationController
     raise ChallengeExceptions::BadParameters unless params[:offset] && params[:limit] && params[:start_timestamp]
 
     time_range = params[:range]
-    if !!params[:orm]
+    if params[:orm] == "true"
       accesses, total, elapsed_time = fetch_most_accessed_with_orm(time_range)
     else
       accesses, total, elapsed_time = fetch_most_accessed_from_file(time_range)

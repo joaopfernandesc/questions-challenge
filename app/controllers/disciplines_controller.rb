@@ -4,7 +4,15 @@ class DisciplinesController < ApplicationController
 
   def get_disciplines_accesses
     start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-    daily_access = (!!params[:orm] ? Question.group(:discipline).sum(:daily_access) : fetch_disciplines_daily_access).sort_by { |_k, v| v }.reverse!
+    daily_access = (
+      if params[:orm] == "true"
+        Question
+          .group(:discipline)
+          .sum(:daily_access)
+      else
+        fetch_disciplines_daily_access
+      end
+    ).sort_by { |_k, v| v }.reverse!
 
     total_accesses = 0
     daily_access.map! do |da|
@@ -20,7 +28,16 @@ class DisciplinesController < ApplicationController
 
   def get_hottest_disciplines
     start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-    hottest_disciplines = (!!params[:orm] ? Question.order('daily_access DESC, id ASC').limit(10).pluck(:discipline) : fetch_hottest_disciplines).uniq
+    hottest_disciplines = (
+      if params[:orm] == "true"
+        Question
+          .order('daily_access DESC, id ASC')
+          .limit(10)
+          .pluck(:discipline)
+      else
+        fetch_hottest_disciplines
+      end
+    ).uniq
 
     end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
     elapsed_time = (end_time - start_time).round(6)
